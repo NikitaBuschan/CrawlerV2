@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "3YXfx2YqYxXf6sFMXXV+fkBw7HN7LKGALiIHjxUPxqZ5ArqaK+i7t20rR4bvfwZJk1Llt/0iv623VITLl5HazA==",
+  "success": true,
+  "projectFilePath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Nikita\\.nuget\\packages\\amazon.lambda.core\\2.0.0\\amazon.lambda.core.2.0.0.nupkg.sha512",
+    "C:\\Users\\Nikita\\.nuget\\packages\\amazon.lambda.serialization.systemtextjson\\2.1.0\\amazon.lambda.serialization.systemtextjson.2.1.0.nupkg.sha512",
+    "C:\\Users\\Nikita\\.nuget\\packages\\awssdk.core\\3.7.3.29\\awssdk.core.3.7.3.29.nupkg.sha512",
+    "C:\\Users\\Nikita\\.nuget\\packages\\awssdk.lambda\\3.7.4.16\\awssdk.lambda.3.7.4.16.nupkg.sha512",
+    "C:\\Users\\Nikita\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
