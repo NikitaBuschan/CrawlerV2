@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj": {}
+    "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj": {}
   },
   "projects": {
-    "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj": {
+    "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj",
+        "projectUniqueName": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj",
         "projectName": "CrawlerDownloaderRPC",
-        "projectPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj",
+        "projectPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC.csproj",
         "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-        "outputPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\obj\\",
+        "outputPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerDownloaderRPC\\CrawlerDownloaderRPC\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -46,7 +46,7 @@
             },
             "AWSSDK.Lambda": {
               "target": "Package",
-              "version": "[3.7.3.30, )"
+              "version": "[3.7.4, )"
             },
             "Amazon.Lambda.Core": {
               "target": "Package",
@@ -85,6 +85,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }

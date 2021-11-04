@@ -1,0 +1,16 @@
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.GeneratedMSBuildEditorConfig.editorconfig
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.AssemblyInfoInputs.cache
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.AssemblyInfo.cs
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.csproj.CoreCompileInputs.cache
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.deps.json
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.runtimeconfig.json
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.runtimeconfig.dev.json
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.pdb
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\Amazon.Lambda.Core.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\Amazon.Lambda.Serialization.SystemTextJson.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.csproj.CopyComplete
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.pdb
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.genruntimeconfig.cache

@@ -1,0 +1,7 @@
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Release\netcoreapp3.1\publish\CrawlerDownloaderCovalent.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Release\netcoreapp3.1\publish\CrawlerDownloaderCovalent.deps.json
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Release\netcoreapp3.1\publish\CrawlerDownloaderCovalent.runtimeconfig.json
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Release\netcoreapp3.1\publish\CrawlerDownloaderCovalent.pdb
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Release\netcoreapp3.1\publish\Amazon.Lambda.Core.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Release\netcoreapp3.1\publish\Amazon.Lambda.Serialization.SystemTextJson.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\bin\Release\netcoreapp3.1\publish\Newtonsoft.Json.dll

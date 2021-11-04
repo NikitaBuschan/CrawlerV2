@@ -23,7 +23,7 @@ namespace CrawlerDownloaderRPC
         public static CancellationTokenSource cancellationToken = new CancellationTokenSource();
         public static DateTime refreshDataTime = new DateTime();
 
-        public async Task<List<FilterLog>> FunctionHandler(DownloaderObject data, ILambdaContext context)
+        public async Task<List<Log>> FunctionHandler(DownloaderObject data, ILambdaContext context)
         {
             Lambda._context = context;
             Lambda.Log($"Get data from verifier: {data}");
@@ -43,7 +43,69 @@ namespace CrawlerDownloaderRPC
                 }
             }
 
-            return logs;
+            List<Log> result = new List<Log>();
+
+            foreach (var log in logs)
+            {
+                Transaction receipt = new Transaction();
+
+                foreach (var connection in data.Connections)
+                {
+                    var web3 = new Web3(connection);
+                    
+                    try
+                    {
+                        receipt = GetReceipt(web3, log.TransactionHash);
+                        if (receipt != null)
+                        {
+                            break;
+                        }
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+
+                if (receipt == null)
+                {
+                    Lambda.Log($"Return {result.Count} logs");
+                    return result;
+                }
+
+                result.Add(new Log()
+                {
+                    LogIndex = log.LogIndex.Value.ToString(),
+                    Data = log.Data,
+                    Topics = CreateTopics(log.Topics),
+                    TransactionIndex = log.TransactionIndex.Value.ToString(),
+                    Removed = log.Removed,
+                    BlockNumber = log.BlockNumber.Value.ToString(),
+                    BlockHash = log.BlockHash,
+                    Hash = log.TransactionHash,
+                    From = receipt.From,
+                    To = receipt.To,
+                    Value = receipt.Value.Value.ToString()
+                });
+            }
+
+            Lambda.Log($"Return {result.Count} logs");
+            return result;
+        }
+
+        public Transaction GetReceipt(Web3 web3, string hash) =>
+            web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(hash).Result;
+
+        public List<string> CreateTopics(object[] topics)
+        {
+            var res = new List<string>();
+
+            foreach (var topic in topics)
+            {
+                res.Add(topic.ToString());
+            }
+
+            return res;
         }
 
         public async Task<List<FilterLog>> GetLogs(Web3 web3, Int32 from, Int32 to, string address)

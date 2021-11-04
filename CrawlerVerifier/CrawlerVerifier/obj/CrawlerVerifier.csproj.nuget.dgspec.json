@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj": {}
+    "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj": {}
   },
   "projects": {
-    "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj": {
+    "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj",
+        "projectUniqueName": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj",
         "projectName": "CrawlerVerifier",
-        "projectPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj",
+        "projectPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerVerifier\\CrawlerVerifier\\CrawlerVerifier.csproj",
         "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-        "outputPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerVerifier\\CrawlerVerifier\\obj\\",
+        "outputPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerVerifier\\CrawlerVerifier\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -55,10 +55,6 @@
             "Amazon.Lambda.Serialization.SystemTextJson": {
               "target": "Package",
               "version": "[2.1.0, )"
-            },
-            "Nethereum.RPC": {
-              "target": "Package",
-              "version": "[4.1.0, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",

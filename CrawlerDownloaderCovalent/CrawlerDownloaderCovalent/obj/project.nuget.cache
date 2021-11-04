@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "l3mNAGpKe1E7K4vuYSVu7AFg9Ka6uYIi179faimNwqUemo3ALOOoelUzBqbKkIWySZHSsoDJDXh23DScvGQxkw==",
+  "dgSpecHash": "C7Go1BTsrokplTFp5GeAdz2wnNc2EQbgN6nLaga/HGXB9oGvTbJEOBNXAu9UZdJm0LO0PujKdSdfJHUrPdOqSA==",
   "success": true,
-  "projectFilePath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerDownloaderCovalent\\CrawlerDownloaderCovalent\\CrawlerDownloaderCovalent.csproj",
+  "projectFilePath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerDownloaderCovalent\\CrawlerDownloaderCovalent\\CrawlerDownloaderCovalent.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Nikita\\.nuget\\packages\\amazon.lambda.core\\2.0.0\\amazon.lambda.core.2.0.0.nupkg.sha512",
     "C:\\Users\\Nikita\\.nuget\\packages\\amazon.lambda.serialization.systemtextjson\\2.1.0\\amazon.lambda.serialization.systemtextjson.2.1.0.nupkg.sha512",

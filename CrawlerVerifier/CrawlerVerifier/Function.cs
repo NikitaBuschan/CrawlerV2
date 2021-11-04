@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using CrawlerVerifier.Model;
-using Nethereum.RPC.Eth.DTOs;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -59,7 +58,7 @@ namespace CrawlerVerifier
             }
 
             // CHECKING DATA
-            List<FilterLog> logs = CreateLogsList(rpcData, covalentData);
+            List<Log> logs = CreateLogsList(rpcData, covalentData);
 
             // RUN LOG SAVER
             logs = logs.OrderBy(x => x.BlockNumber).ToList();
@@ -70,28 +69,23 @@ namespace CrawlerVerifier
                 if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
                     return $"Work time: {DateTime.UtcNow - start}";
 
-                //SaveLog(log, )
+                RunLogSaver(log).ConfigureAwait(false).GetAwaiter();
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
             }
-
-            // https://api.covalenthq.com/v1/56/events/address/0x537509C227b4F69F3871a665Ef25E85c92d39ed8/?starting-block=9010206&ending-block=9010306&page-size=100&limit=100
-
-
 
             return $"Work time: {DateTime.UtcNow - start}";
         }
 
-        //public async Task<string> SaveLog(FilterLog log)
-        //{
-
-        //}
-
-        public List<FilterLog> CreateLogsList(List<FilterLog> rpc, List<FilterLog> covalent)
+        public async Task<string> RunLogSaver(Log log) =>
+            await Lambda.Run("CrawlerLogSaver", JsonSerializer.Serialize(log));
+        
+        public List<Log> CreateLogsList(List<Log> rpc, List<Log> covalent)
         {
-            List<FilterLog> saveList = new List<FilterLog>();
+            List<Log> saveList = new List<Log>();
 
             foreach (var log in rpc)
             {
-                if (saveList.FirstOrDefault(x => x.TransactionHash == log.TransactionHash && x.LogIndex == log.LogIndex) == null)
+                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
                 {
                     saveList.Add(log);
                 }
@@ -99,7 +93,7 @@ namespace CrawlerVerifier
 
             foreach (var log in covalent)
             {
-                if (saveList.FirstOrDefault(x => x.TransactionHash == log.TransactionHash && x.LogIndex == log.LogIndex) == null)
+                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
                 {
                     saveList.Add(log);
                 }
@@ -108,10 +102,7 @@ namespace CrawlerVerifier
             return saveList;
         }
 
-        public async Task<List<FilterLog>> RunDownloader(string name, DownloaderObject downloader)
-        {
-            var test = JsonSerializer.Serialize(downloader);
-            return JsonSerializer.Deserialize<List<FilterLog>>(await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader)));
-        }
+        public async Task<List<Log>> RunDownloader(string name, DownloaderObject downloader) =>
+            JsonSerializer.Deserialize<List<Log>>(await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader)));
     }
 }
