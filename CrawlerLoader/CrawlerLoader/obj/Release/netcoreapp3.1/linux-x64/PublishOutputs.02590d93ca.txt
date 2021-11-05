@@ -1,0 +1,9 @@
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\CrawlerLoader.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\CrawlerLoader.deps.json
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\CrawlerLoader.runtimeconfig.json
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\CrawlerLoader.pdb
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\Amazon.Lambda.Core.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\Amazon.Lambda.Serialization.SystemTextJson.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\AWSSDK.Core.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\AWSSDK.Lambda.dll
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerLoader\CrawlerLoader\bin\Release\netcoreapp3.1\publish\Newtonsoft.Json.dll

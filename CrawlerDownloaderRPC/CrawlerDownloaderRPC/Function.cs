@@ -26,7 +26,7 @@ namespace CrawlerDownloaderRPC
         public async Task<List<Log>> FunctionHandler(DownloaderObject data, ILambdaContext context)
         {
             Lambda._context = context;
-            Lambda.Log($"Get data from verifier: {data}");
+            Lambda.Log($"Get data by contract {data.ContractAddress}");
 
             List<FilterLog> logs = new List<FilterLog>();
 
@@ -38,39 +38,56 @@ namespace CrawlerDownloaderRPC
 
                 if (list != null)
                 {
-                    logs.AddRange(list);
+                    if (list.Count == 1)
+                    {
+                        logs = list;
+
+                    }
+                    else
+                    {
+                        logs.AddRange(list);
+                    }
                     break;
                 }
+            }
+
+            if (data.ContractAddress == "0x5AAFD67BFe65CF0a0055549991D02557f49bDD6A")
+            {
+                Lambda.Log($"--------!!!!Get logs: {logs.Count}");
             }
 
             List<Log> result = new List<Log>();
 
             foreach (var log in logs)
             {
-                Transaction receipt = new Transaction();
+                Transaction receipt = null;
 
                 foreach (var connection in data.Connections)
                 {
                     var web3 = new Web3(connection);
-                    
+
                     try
                     {
                         receipt = GetReceipt(web3, log.TransactionHash);
                         if (receipt != null)
                         {
+                            Lambda.Log($"Get receipt {receipt.TransactionHash}");
                             break;
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Lambda.Log($"Get repeipt exception: {ex.Message}");
+                        Lambda.Log($"Receipt can't load with connection: {connection}");
+
                         continue;
                     }
                 }
 
                 if (receipt == null)
                 {
-                    Lambda.Log($"Return {result.Count} logs");
-                    return result;
+                    Lambda.Log($"Receipt equal null");
+                    return null;
                 }
 
                 result.Add(new Log()
@@ -87,6 +104,16 @@ namespace CrawlerDownloaderRPC
                     To = receipt.To,
                     Value = receipt.Value.Value.ToString()
                 });
+            }
+
+            if (data.ContractAddress == "0x5AAFD67BFe65CF0a0055549991D02557f49bDD6A")
+            {
+                Lambda.Log($"--------!!!!Result logs: {result.Count}");
+            }
+
+            if (result.Count == 0 && logs.Count != 0)
+            {
+                return null;
             }
 
             Lambda.Log($"Return {result.Count} logs");

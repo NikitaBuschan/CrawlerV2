@@ -53,6 +53,59 @@
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
         }
       }
+    },
+    ".NETCoreApp,Version=v3.1/linux-x64": {
+      "Amazon.Lambda.Core/2.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Amazon.Lambda.Core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Amazon.Lambda.Core.dll": {}
+        }
+      },
+      "Amazon.Lambda.Serialization.SystemTextJson/2.1.0": {
+        "type": "package",
+        "dependencies": {
+          "Amazon.Lambda.Core": "1.2.0"
+        },
+        "compile": {
+          "lib/netcoreapp3.1/Amazon.Lambda.Serialization.SystemTextJson.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/Amazon.Lambda.Serialization.SystemTextJson.dll": {}
+        }
+      },
+      "AWSSDK.Core/3.7.3.29": {
+        "type": "package",
+        "compile": {
+          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/AWSSDK.Core.dll": {}
+        }
+      },
+      "AWSSDK.Lambda/3.7.4.16": {
+        "type": "package",
+        "dependencies": {
+          "AWSSDK.Core": "[3.7.3.29, 4.0.0)"
+        },
+        "compile": {
+          "lib/netcoreapp3.1/AWSSDK.Lambda.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/AWSSDK.Lambda.dll": {}
+        }
+      },
+      "Newtonsoft.Json/13.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+        }
+      }
     }
   },
   "libraries": {
@@ -177,11 +230,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
+      "projectUniqueName": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
       "projectName": "CrawlerLoader",
-      "projectPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
+      "projectPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
       "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-      "outputPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\obj\\",
+      "outputPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -247,6 +300,11 @@
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "linux-x64": {
+        "#import": []
       }
     }
   }

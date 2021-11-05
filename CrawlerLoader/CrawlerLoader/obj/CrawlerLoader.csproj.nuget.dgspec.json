@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj": {}
+    "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj": {}
   },
   "projects": {
-    "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj": {
+    "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
+        "projectUniqueName": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
         "projectName": "CrawlerLoader",
-        "projectPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
+        "projectPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\CrawlerLoader.csproj",
         "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-        "outputPath": "E:\\Poolz\\0. Lambda\\Crawler\\CrawlerLoader\\CrawlerLoader\\obj\\",
+        "outputPath": "E:\\Poolz\\0. Lambda\\CrawlerV2\\CrawlerLoader\\CrawlerLoader\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -77,6 +77,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }

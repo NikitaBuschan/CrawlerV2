@@ -15,7 +15,7 @@ namespace CrawlerVerifier
         public async Task<string> FunctionHandler(VerifiObject data, ILambdaContext context)
         {
             Lambda._context = context;
-            Lambda.Log($"Get data from loader: {data}");
+            Lambda.Log($"Get data from loader by contract: {data.Contract.Id}");
 
             DateTime start = DateTime.UtcNow;
 
@@ -30,12 +30,22 @@ namespace CrawlerVerifier
                 ChainId = data.Contract.ChainId
             });
 
-            Lambda.Log($"RPC logs count: {rpcData.Count}");
-            if (rpcData.Count == 0)
+            if (rpcData != null)
             {
-                // update block
-                data.Contract.LastBlockRPC += data.RPCCount;
-                await Lambda.Run("LambdaDbUpdater", JsonSerializer.Serialize(data.Contract));
+                Lambda.Log($"RPC logs count: {rpcData.Count}");
+                if (rpcData.Count == 0)
+                {
+                    // update block
+                    data.Contract.LastBlockRPC += data.RPCCount;
+                    var contractId = await UpdateInDb("contract", data.Contract);
+
+                    Lambda.Log($"Update contract {contractId} last block RPC to: {data.Contract.LastBlockRPC}");
+                }
+            }
+            else
+            {
+                rpcData = new List<Log>();
+                Lambda.Log($"rpc downloader return null, contract {data.Contract.Id}");
             }
 
             // run downloader covalent
@@ -49,16 +59,26 @@ namespace CrawlerVerifier
                 ChainId = data.Contract.ChainId
             });
 
-            Lambda.Log($"Covalent logs count: {covalentData.Count}");
-            if (covalentData.Count == 0)
+            if (covalentData != null)
             {
-                // update block
-                data.Contract.LastBlockWS += data.CovalentCount;
-                await Lambda.Run("LambdaDbUpdater", JsonSerializer.Serialize(data.Contract));
+                Lambda.Log($"Covalent logs count: {covalentData.Count}");
+                if (covalentData.Count == 0)
+                {
+                    // update block
+                    data.Contract.LastBlockWS += data.CovalentCount;
+                    var contractId = await UpdateInDb("contract", data.Contract);
+
+                    Lambda.Log($"Update contract {contractId} last block Covalent to: {data.Contract.LastBlockWS}");
+                }
+            }
+            else
+            {
+                covalentData = new List<Log>();
+                Lambda.Log($"covalent downloader return null, contract {data.Contract.Id}");
             }
 
             // CHECKING DATA
-            List<Log> logs = CreateLogsList(rpcData, covalentData);
+            List<Log> logs = CreateLogsList(rpcData, covalentData, data.Contract);
 
             // RUN LOG SAVER
             logs = logs.OrderBy(x => x.BlockNumber).ToList();
@@ -78,8 +98,21 @@ namespace CrawlerVerifier
 
         public async Task<string> RunLogSaver(Log log) =>
             await Lambda.Run("CrawlerLogSaver", JsonSerializer.Serialize(log));
-        
-        public List<Log> CreateLogsList(List<Log> rpc, List<Log> covalent)
+
+        public async Task<string> UpdateInDb(string name, Contract contract)
+        {
+            var data = new DbObject()
+            {
+                Name = name,
+                Data = JsonSerializer.Serialize(contract)
+            };
+
+            Lambda.Log($"Update {name} in DB");
+
+            return await Lambda.Run("LambdaDbUpdater", JsonSerializer.Serialize(data));
+        }
+
+        public List<Log> CreateLogsList(List<Log> rpc, List<Log> covalent, Contract contract)
         {
             List<Log> saveList = new List<Log>();
 
@@ -87,7 +120,22 @@ namespace CrawlerVerifier
             {
                 if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
                 {
-                    saveList.Add(log);
+                    saveList.Add(new Log()
+                    {
+                        Type = 0,
+                        Contract = contract,
+                        LogIndex = log.LogIndex,
+                        Data = log.Data,
+                        Topics = log.Topics,
+                        TransactionIndex = log.TransactionIndex,
+                        Removed = log.Removed,
+                        BlockNumber = log.BlockNumber,
+                        BlockHash = log.BlockHash,
+                        Hash = log.Hash,
+                        From = log.From,
+                        To = log.To,
+                        Value = log.Value
+                    });
                 }
             }
 
@@ -95,14 +143,36 @@ namespace CrawlerVerifier
             {
                 if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
                 {
-                    saveList.Add(log);
+                    saveList.Add(new Log()
+                    {
+                        Type = 1,
+                        Contract = contract,
+                        LogIndex = log.LogIndex,
+                        Data = log.Data,
+                        Topics = log.Topics,
+                        TransactionIndex = log.TransactionIndex,
+                        Removed = log.Removed,
+                        BlockNumber = log.BlockNumber,
+                        BlockHash = log.BlockHash,
+                        Hash = log.Hash,
+                        From = log.From,
+                        To = log.To,
+                        Value = log.Value
+                    });
                 }
             }
 
             return saveList;
         }
 
-        public async Task<List<Log>> RunDownloader(string name, DownloaderObject downloader) =>
-            JsonSerializer.Deserialize<List<Log>>(await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader)));
+        public async Task<List<Log>> RunDownloader(string name, DownloaderObject downloader)
+        {
+            var result = await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader));
+
+            if (result == null)
+                return null;
+
+            return JsonSerializer.Deserialize<List<Log>>(result);
+        }
     }
 }

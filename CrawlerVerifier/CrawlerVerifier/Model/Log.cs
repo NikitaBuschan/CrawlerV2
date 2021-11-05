@@ -4,6 +4,8 @@ namespace CrawlerVerifier.Model
 {
     public class Log
     {
+        public int Type { get; set; }
+        public Contract Contract { get; set; }
         public string LogIndex { get; set; }
         public string Data { get; set; }
         public List<string> Topics { get; set; }
