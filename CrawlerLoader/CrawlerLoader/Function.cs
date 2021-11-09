@@ -74,7 +74,7 @@ namespace CrawlerLoader
                     var test = System.Text.Json.JsonSerializer.Serialize(verifier);
 
                     Lambda.Run("CrawlerVerifier", System.Text.Json.JsonSerializer.Serialize(verifier)).ConfigureAwait(false).GetAwaiter();
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(10));
                 }
             }
         }

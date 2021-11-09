@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using CrawlerDownloaderCovalent.Model;
 
@@ -12,7 +13,7 @@ namespace CrawlerDownloaderCovalent
 {
     public class Function
     {
-        public List<Log> FunctionHandler(DownloaderObject data, ILambdaContext context)
+        public async Task<List<Log>> FunctionHandler(DownloaderObject data, ILambdaContext context)
         {
             Lambda._context = context;
             Lambda.Log($"Get data from verifier: {data}");
@@ -30,12 +31,21 @@ namespace CrawlerDownloaderCovalent
                 return null;
             }
 
-            logs = logs.OrderBy(x => x.block_height).ToList();
+            List<Item> list = new List<Item>();
+
+            if (logs.Count > 5)
+            {
+                list.AddRange(logs.GetRange(0, 5));
+            } else
+            {
+                list.AddRange(logs);
+            }
 
             List<Log> result = new List<Log>();
 
-            foreach (var log in logs)
+            foreach (var log in list)
             {
+                await Task.Delay(TimeSpan.FromMilliseconds(100));
                 var transactions = GetTransactionByHash(log.tx_hash, data.ChainId);
 
                 if (transactions == null)
@@ -66,8 +76,12 @@ namespace CrawlerDownloaderCovalent
                 }
             }
 
-            Lambda.Log($"Return {result.Count} logs");
-            return result;
+            var l = result.Distinct().ToList();
+
+            //result = result.Distinct().ToList();
+
+            Lambda.Log($"Return {l.Count} logs");
+            return l;
         }
 
         public List<Model.TransactionItem.Item> GetTransactionByHash(string hash, int chainId)

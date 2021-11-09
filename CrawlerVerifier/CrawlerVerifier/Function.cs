@@ -21,6 +21,21 @@ namespace CrawlerVerifier
 
             // run downloader covalent
             Lambda.Log("Run rpc downloader");
+
+            if (data.Contract.LastBlockRPC < data.Contract.CreationBlock)
+            {
+                data.Contract.LastBlockRPC = data.Contract.CreationBlock;
+            }
+
+            if (data.Contract.LastBlockWS < data.Contract.CreationBlock)
+            {
+                data.Contract.LastBlockWS = data.Contract.CreationBlock;
+            }
+
+            //var from = data.Contract.LastBlockRPC < data.Contract.CreationBlock ? data.Contract.CreationBlock : data.Contract.LastBlockRPC;
+
+            //data.Contract.LastBlockRPC = from;
+
             var rpcData = await RunDownloader("RPC", new DownloaderObject()
             {
                 From = data.Contract.LastBlockRPC,
@@ -50,6 +65,8 @@ namespace CrawlerVerifier
 
             // run downloader covalent
             Lambda.Log("Run covalent downloader");
+
+
             var covalentData = await RunDownloader("Covalent", new DownloaderObject()
             {
                 From = data.Contract.LastBlockWS,

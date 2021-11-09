@@ -14,3 +14,4 @@ E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent
 E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.dll
 E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.pdb
 E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.genruntimeconfig.cache
+E:\Poolz\0. Lambda\CrawlerV2\CrawlerDownloaderCovalent\CrawlerDownloaderCovalent\obj\Debug\netcoreapp3.1\CrawlerDownloaderCovalent.csproj.AssemblyReference.cache

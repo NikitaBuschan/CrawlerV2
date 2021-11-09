@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
@@ -41,13 +42,20 @@ namespace CrawlerDownloaderRPC
                     if (list.Count == 1)
                     {
                         logs = list;
-
+                        break;
                     }
                     else
                     {
-                        logs.AddRange(list);
+                        if (list.Count > 10)
+                        {
+                            logs.AddRange(list.GetRange(0, 10));
+                        } else
+                        {
+                            logs.AddRange(list);
+                        }
+                        
+                        break;
                     }
-                    break;
                 }
             }
 
@@ -68,6 +76,8 @@ namespace CrawlerDownloaderRPC
 
                     try
                     {
+                        await Task.Delay(TimeSpan.FromMilliseconds(100));
+
                         receipt = GetReceipt(web3, log.TransactionHash);
                         if (receipt != null)
                         {
