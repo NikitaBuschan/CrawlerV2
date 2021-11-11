@@ -15,12 +15,9 @@ namespace CrawlerVerifier
         public async Task<string> FunctionHandler(VerifiObject data, ILambdaContext context)
         {
             Lambda._context = context;
-            Lambda.Log($"Get data from loader by contract: {data.Contract.Id}");
+            Lambda.Log($"Get data from loader by contract: ID {data.Contract.Id}, address {data.Contract.Address}");
 
             DateTime start = DateTime.UtcNow;
-
-            // run downloader covalent
-            Lambda.Log("Run rpc downloader");
 
             if (data.Contract.LastBlockRPC < data.Contract.CreationBlock)
             {
@@ -32,10 +29,8 @@ namespace CrawlerVerifier
                 data.Contract.LastBlockWS = data.Contract.CreationBlock;
             }
 
-            //var from = data.Contract.LastBlockRPC < data.Contract.CreationBlock ? data.Contract.CreationBlock : data.Contract.LastBlockRPC;
 
-            //data.Contract.LastBlockRPC = from;
-
+            Lambda.Log("Run rpc downloader");
             var rpcData = await RunDownloader("RPC", new DownloaderObject()
             {
                 From = data.Contract.LastBlockRPC,
@@ -51,22 +46,26 @@ namespace CrawlerVerifier
                 if (rpcData.Count == 0)
                 {
                     // update block
+
+                    var from = data.Contract.LastBlockWS;
                     data.Contract.LastBlockRPC += data.RPCCount;
+
                     var contractId = await UpdateInDb("contract", data.Contract);
 
-                    Lambda.Log($"Update contract {contractId} last block RPC to: {data.Contract.LastBlockRPC}");
+                    Lambda.Log($"Update contract {contractId} last block RPC from: {from} to: {data.Contract.LastBlockRPC}");
                 }
             }
             else
             {
                 rpcData = new List<Log>();
-                Lambda.Log($"rpc downloader return null, contract {data.Contract.Id}");
+                Lambda.Log($"rpc downloader return null, contract: ID {data.Contract.Id}, address {data.Contract.Address}");
             }
 
-            // run downloader covalent
+            Lambda.Log($"Run save rpc logs, {rpcData.Count} count");
+            SaveLogs(rpcData, data.Contract, 0, start);
+
+
             Lambda.Log("Run covalent downloader");
-
-
             var covalentData = await RunDownloader("Covalent", new DownloaderObject()
             {
                 From = data.Contract.LastBlockWS,
@@ -82,108 +81,64 @@ namespace CrawlerVerifier
                 if (covalentData.Count == 0)
                 {
                     // update block
+
+                    var from = data.Contract.LastBlockWS;
                     data.Contract.LastBlockWS += data.CovalentCount;
+
                     var contractId = await UpdateInDb("contract", data.Contract);
 
-                    Lambda.Log($"Update contract {contractId} last block Covalent to: {data.Contract.LastBlockWS}");
+                    Lambda.Log($"Update contract {contractId} last block Covalent from: {from} to: {data.Contract.LastBlockWS}");
                 }
             }
             else
             {
                 covalentData = new List<Log>();
-                Lambda.Log($"covalent downloader return null, contract {data.Contract.Id}");
+                Lambda.Log($"covalent downloader return null, contract: ID {data.Contract.Id}, address {data.Contract.Address}");
             }
 
-            List<Log> saveList = new List<Log>();
 
-            foreach (var log in rpcData)
-            {
-                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
-                {
-                    saveList.Add(new Log()
-                    {
-                        Type = 0,
-                        Contract = data.Contract,
-                        LogIndex = log.LogIndex,
-                        Data = log.Data,
-                        Topics = log.Topics,
-                        TransactionIndex = log.TransactionIndex,
-                        Removed = log.Removed,
-                        BlockNumber = log.BlockNumber,
-                        BlockHash = log.BlockHash,
-                        Hash = log.Hash,
-                        From = log.From,
-                        To = log.To,
-                        Value = log.Value
-                    });
-                }
-            }
-
-            foreach (var item in saveList)
-            {
-                if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
-                    return $"Work time: {DateTime.UtcNow - start}";
-
-                RunLogSaver(item).ConfigureAwait(false).GetAwaiter();
-
-                await Task.Delay(TimeSpan.FromSeconds(40));
-            }
-
-            saveList = new List<Log>();
-
-            foreach (var log in covalentData)
-            {
-                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
-                {
-                    saveList.Add(new Log()
-                    {
-                        Type = 1,
-                        Contract = data.Contract,
-                        LogIndex = log.LogIndex,
-                        Data = log.Data,
-                        Topics = log.Topics,
-                        TransactionIndex = log.TransactionIndex,
-                        Removed = log.Removed,
-                        BlockNumber = log.BlockNumber,
-                        BlockHash = log.BlockHash,
-                        Hash = log.Hash,
-                        From = log.From,
-                        To = log.To,
-                        Value = log.Value
-                    });
-                }
-            }
-
-            foreach (var item in saveList)
-            {
-                if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
-                    return $"Work time: {DateTime.UtcNow - start}";
-
-                RunLogSaver(item).ConfigureAwait(false).GetAwaiter();
-            }
-
-            // CHECKING DATA
-            //List<Log> logs = CreateLogsList(rpcData, covalentData, data.Contract);
-
-            //// RUN LOG SAVER
-            //logs = logs.OrderBy(x => x.BlockNumber).ToList();
-
-
-            //foreach (var log in logs)
-            //{
-            //    if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
-            //        return $"Work time: {DateTime.UtcNow - start}";
-
-
-            //    var test = JsonSerializer.Serialize(log);
-
-            //    RunLogSaver(log).ConfigureAwait(false).GetAwaiter();
-
-
-            //    await Task.Delay(TimeSpan.FromMilliseconds(500));
-            //}
+            Lambda.Log($"Run save covalent logs, {covalentData.Count} count");
+            SaveLogs(covalentData, data.Contract, 1, start);
 
             return $"Work time: {DateTime.UtcNow - start}";
+        }
+
+        public string SaveLogs(List<Log> logs, Contract contract, int type, DateTime start)
+        {
+            List<Log> saveList = new List<Log>();
+
+            foreach (var log in logs)
+            {
+                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
+                {
+                    saveList.Add(new Log()
+                    {
+                        Type = type,
+                        Contract = contract,
+                        LogIndex = log.LogIndex,
+                        Data = log.Data,
+                        Topics = log.Topics,
+                        TransactionIndex = log.TransactionIndex,
+                        Removed = log.Removed,
+                        BlockNumber = log.BlockNumber,
+                        BlockHash = log.BlockHash,
+                        Hash = log.Hash,
+                        From = log.From,
+                        To = log.To,
+                        Value = log.Value
+                    });
+                }
+            }
+
+            foreach (var item in saveList)
+            {
+                if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
+                    return $"Work time: {DateTime.UtcNow - start}";
+
+                RunLogSaver(item).ConfigureAwait(false).GetAwaiter();
+            }
+
+            return "All good";
         }
 
         public async Task<string> RunLogSaver(Log log) =>
@@ -200,59 +155,6 @@ namespace CrawlerVerifier
             Lambda.Log($"Update {name} in DB");
 
             return await Lambda.Run("LambdaDbUpdater", JsonSerializer.Serialize(data));
-        }
-
-        public List<Log> CreateLogsList(List<Log> rpc, List<Log> covalent, Contract contract)
-        {
-            List<Log> saveList = new List<Log>();
-
-            foreach (var log in rpc)
-            {
-                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
-                {
-                    saveList.Add(new Log()
-                    {
-                        Type = 0,
-                        Contract = contract,
-                        LogIndex = log.LogIndex,
-                        Data = log.Data,
-                        Topics = log.Topics,
-                        TransactionIndex = log.TransactionIndex,
-                        Removed = log.Removed,
-                        BlockNumber = log.BlockNumber,
-                        BlockHash = log.BlockHash,
-                        Hash = log.Hash,
-                        From = log.From,
-                        To = log.To,
-                        Value = log.Value
-                    });
-                }
-            }
-
-            foreach (var log in covalent)
-            {
-                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
-                {
-                    saveList.Add(new Log()
-                    {
-                        Type = 1,
-                        Contract = contract,
-                        LogIndex = log.LogIndex,
-                        Data = log.Data,
-                        Topics = log.Topics,
-                        TransactionIndex = log.TransactionIndex,
-                        Removed = log.Removed,
-                        BlockNumber = log.BlockNumber,
-                        BlockHash = log.BlockHash,
-                        Hash = log.Hash,
-                        From = log.From,
-                        To = log.To,
-                        Value = log.Value
-                    });
-                }
-            }
-
-            return saveList;
         }
 
         public async Task<List<Log>> RunDownloader(string name, DownloaderObject downloader)
