@@ -46,9 +46,9 @@ namespace CrawlerDownloaderRPC
                     }
                     else
                     {
-                        if (list.Count > 10)
+                        if (list.Count > 50)
                         {
-                            logs.AddRange(list.GetRange(0, 10));
+                            logs.AddRange(list.GetRange(0, 50));
                         } else
                         {
                             logs.AddRange(list);
@@ -149,7 +149,7 @@ namespace CrawlerDownloaderRPC
         {
             var logs = new List<FilterLog>();
 
-            var filter = new NewFilterInput() { Address = new[] { address } };
+            var filter = new NewFilterInput() { Address = new[] { address.ToLower() } };
             int DefaultBlocksPerBatch = to - from;
             const int RequestRetryWeight = 0;
             const int MinimumBlockConfirmations = 12;

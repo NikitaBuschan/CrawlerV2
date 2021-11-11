@@ -23,6 +23,7 @@ namespace CrawlerLoader
 
 
             var etherscanLastBlock = Convert.ToInt32(await GetLastBlock("etherscan last block"));
+            Lambda.Log($"Get etherscan last block {etherscanLastBlock}");
 
             var etherscanConnections = new List<string>()
             {
@@ -31,6 +32,7 @@ namespace CrawlerLoader
             };
 
             var binanceLastBlock = Convert.ToInt32(await GetLastBlock("binance last block"));
+            Lambda.Log($"Get binance last block {binanceLastBlock}");
 
             var binanceConnections = new List<string>()
             {
@@ -73,6 +75,7 @@ namespace CrawlerLoader
 
                     var test = System.Text.Json.JsonSerializer.Serialize(verifier);
 
+                    Lambda.Log($"Run verifier for contract: id {contract.Id}, address {contract.Address}");
                     Lambda.Run("CrawlerVerifier", System.Text.Json.JsonSerializer.Serialize(verifier)).ConfigureAwait(false).GetAwaiter();
                     await Task.Delay(TimeSpan.FromSeconds(10));
                 }
@@ -81,11 +84,13 @@ namespace CrawlerLoader
 
         public Int32 GetBlocksCount(Int32 from, Int32 lastBlock)
         {
+            Lambda.Log($"Get blocks count from: {from} to: {lastBlock}");
             var blocksLimit = 500;
             var step = 10;
 
             if (from + step > lastBlock)
             {
+                Lambda.Log($"Blocks count: {lastBlock - from}");
                 return lastBlock - from;
             }
 
@@ -93,10 +98,12 @@ namespace CrawlerLoader
             {
                 if (from + i + step > lastBlock)
                 {
+                    Lambda.Log($"Blocks count: {i}");
                     return i;
                 }
             }
 
+            Lambda.Log($"Blocks count: {blocksLimit}");
             return blocksLimit;
         }
 
@@ -108,6 +115,7 @@ namespace CrawlerLoader
                 Data = ""
             };
 
+            Lambda.Log("Get all contracts from DB");
             var result = await Lambda.Run("DBReader", System.Text.Json.JsonSerializer.Serialize(dbObject));
 
             return System.Text.Json.JsonSerializer.Deserialize<List<Contract>>(result);
@@ -121,6 +129,7 @@ namespace CrawlerLoader
                 Data = data
             };
 
+            Lambda.Log($"Get last block from DB");
             var result = await Lambda.Run("DBReader", System.Text.Json.JsonSerializer.Serialize(dbObject));
 
             return System.Text.Json.JsonSerializer.Deserialize<DictionaryObject>(result).Value;

@@ -16,7 +16,7 @@ namespace CrawlerLogSaver
         public async Task<string> FunctionHandler(SaveLog saveLog, ILambdaContext context)
         {
             Lambda._context = context;
-            Lambda.Log($"Gettings data {saveLog}");
+            Lambda.Log($"Gettings data {saveLog.Contract.Address}");
 
 
             // work with transaction
@@ -70,6 +70,7 @@ namespace CrawlerLogSaver
             } else
             {
                 Lambda.Log($"LogData from logId {logData.LogId} is contained in DB");
+                logDataId = JsonSerializer.Deserialize<LogData>(result).Id;
             }
 
             if (logDataId != 0)
@@ -77,18 +78,26 @@ namespace CrawlerLogSaver
                 if (saveLog.Type == 0)
                 {
                     // RPC
-                    saveLog.Contract.LastBlockRPC = Convert.ToInt32(log.BlockNumber);
-            }
+                    Lambda.Log($"Last block RPC: {saveLog.Contract.LastBlockRPC}");
+
+                    var contract = saveLog.Contract;
+
+                    contract.LastBlockRPC = Convert.ToInt32(log.BlockNumber);
+                    saveLog.Contract.LastBlockRPC = Convert.ToInt32(saveLog.BlockNumber);
+                    Lambda.Log($"Update last block RPC to {saveLog.Contract.LastBlockRPC}");
+                }
                 else
                 {
                     // Covelent
+                    Lambda.Log($"Last block Covalent {saveLog.Contract.LastBlockWS}");
                     saveLog.Contract.LastBlockWS = Convert.ToInt32(log.BlockNumber);
+                    Lambda.Log($"Update last block Covalent to {saveLog.Contract.LastBlockWS}");
                 }
 
                 await UpdateInDb("contract", saveLog.Contract);
             }
 
-            return "Save log";
+            return $"Save log";
         }
 
         public async Task<string> IsContainedInDb<T>(string name, T sendData)
@@ -125,7 +134,7 @@ namespace CrawlerLogSaver
                 Data = JsonSerializer.Serialize(sendData)
             };
 
-            Lambda.Log($"Update {name} in DB");
+            //Lambda.Log($"Update {name} in DB from {from}, to {to}");
 
             return await Lambda.Run("LambdaDbUpdater", JsonSerializer.Serialize(data));
         }

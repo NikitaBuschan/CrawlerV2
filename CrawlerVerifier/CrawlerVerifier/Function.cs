@@ -94,21 +94,94 @@ namespace CrawlerVerifier
                 Lambda.Log($"covalent downloader return null, contract {data.Contract.Id}");
             }
 
-            // CHECKING DATA
-            List<Log> logs = CreateLogsList(rpcData, covalentData, data.Contract);
+            List<Log> saveList = new List<Log>();
 
-            // RUN LOG SAVER
-            logs = logs.OrderBy(x => x.BlockNumber).ToList();
+            foreach (var log in rpcData)
+            {
+                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
+                {
+                    saveList.Add(new Log()
+                    {
+                        Type = 0,
+                        Contract = data.Contract,
+                        LogIndex = log.LogIndex,
+                        Data = log.Data,
+                        Topics = log.Topics,
+                        TransactionIndex = log.TransactionIndex,
+                        Removed = log.Removed,
+                        BlockNumber = log.BlockNumber,
+                        BlockHash = log.BlockHash,
+                        Hash = log.Hash,
+                        From = log.From,
+                        To = log.To,
+                        Value = log.Value
+                    });
+                }
+            }
 
-
-            foreach (var log in logs)
+            foreach (var item in saveList)
             {
                 if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
                     return $"Work time: {DateTime.UtcNow - start}";
 
-                RunLogSaver(log).ConfigureAwait(false).GetAwaiter();
-                await Task.Delay(TimeSpan.FromMilliseconds(500));
+                RunLogSaver(item).ConfigureAwait(false).GetAwaiter();
+
+                await Task.Delay(TimeSpan.FromSeconds(40));
             }
+
+            saveList = new List<Log>();
+
+            foreach (var log in covalentData)
+            {
+                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
+                {
+                    saveList.Add(new Log()
+                    {
+                        Type = 1,
+                        Contract = data.Contract,
+                        LogIndex = log.LogIndex,
+                        Data = log.Data,
+                        Topics = log.Topics,
+                        TransactionIndex = log.TransactionIndex,
+                        Removed = log.Removed,
+                        BlockNumber = log.BlockNumber,
+                        BlockHash = log.BlockHash,
+                        Hash = log.Hash,
+                        From = log.From,
+                        To = log.To,
+                        Value = log.Value
+                    });
+                }
+            }
+
+            foreach (var item in saveList)
+            {
+                if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
+                    return $"Work time: {DateTime.UtcNow - start}";
+
+                RunLogSaver(item).ConfigureAwait(false).GetAwaiter();
+            }
+
+            // CHECKING DATA
+            //List<Log> logs = CreateLogsList(rpcData, covalentData, data.Contract);
+
+            //// RUN LOG SAVER
+            //logs = logs.OrderBy(x => x.BlockNumber).ToList();
+
+
+            //foreach (var log in logs)
+            //{
+            //    if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
+            //        return $"Work time: {DateTime.UtcNow - start}";
+
+
+            //    var test = JsonSerializer.Serialize(log);
+
+            //    RunLogSaver(log).ConfigureAwait(false).GetAwaiter();
+
+
+            //    await Task.Delay(TimeSpan.FromMilliseconds(500));
+            //}
 
             return $"Work time: {DateTime.UtcNow - start}";
         }
@@ -184,7 +257,7 @@ namespace CrawlerVerifier
 
         public async Task<List<Log>> RunDownloader(string name, DownloaderObject downloader)
         {
-            var result = await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader));
+               var result = await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader));
 
             if (result == null)
                 return null;
