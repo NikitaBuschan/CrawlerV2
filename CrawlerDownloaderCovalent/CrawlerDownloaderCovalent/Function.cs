@@ -31,57 +31,67 @@ namespace CrawlerDownloaderCovalent
                 return null;
             }
 
-            List<Item> list = new List<Item>();
+            var list = await CreateLogList(logs, data.ChainId);
 
-            if (logs.Count > 5)
+            List<Log> result = new List<Log>();
+
+            var logsCount = 50;
+
+            if (list.Count > logsCount)
             {
-                list.AddRange(logs.GetRange(0, 5));
-            } else
+                result.AddRange(list.GetRange(0, logsCount));
+            }
+            else
             {
-                list.AddRange(logs);
+                result.AddRange(list);
             }
 
+
+            Lambda.Log($"Return {result.Count} logs");
+            return result;
+        }
+
+        public async Task<List<Log>> CreateLogList(List<Item> list, int chainId)
+        {
             List<Log> result = new List<Log>();
 
             foreach (var log in list)
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
-                var transactions = GetTransactionByHash(log.tx_hash, data.ChainId);
+                await Task.Delay(TimeSpan.FromSeconds(3));
+                var transactionLogs = GetTransactionByHash(log.tx_hash, chainId);
 
-                if (transactions == null)
+                if (transactionLogs == null)
                 {
                     Lambda.Log($"Return {result.Count} logs");
                     return result;
                 }
 
-                foreach (var transaction in transactions)
+                foreach (var transaction in transactionLogs)
                 {
                     foreach (var e in transaction.log_events)
                     {
-                        result.Add(new Log()
+                        if (result.FirstOrDefault(x => x.LogIndex == e.log_offset.ToString() && x.Hash == transaction.tx_hash) == null)
                         {
-                            LogIndex = e.log_offset.ToString(),
-                            Data = e.raw_log_data,
-                            Topics = e.raw_log_topics,
-                            TransactionIndex = transaction.tx_offset.ToString(),
-                            Removed = transaction.successful,
-                            BlockNumber = transaction.block_height.ToString(),
-                            BlockHash = "",
-                            Hash = transaction.tx_hash,
-                            From = transaction.from_address,
-                            To = transaction.to_address,
-                            Value = transaction.value
-                        });
+                            result.Add(new Log()
+                            {
+                                LogIndex = e.log_offset.ToString(),
+                                Data = e.raw_log_data,
+                                Topics = e.raw_log_topics,
+                                TransactionIndex = transaction.tx_offset.ToString(),
+                                Removed = transaction.successful,
+                                BlockNumber = transaction.block_height.ToString(),
+                                BlockHash = "",
+                                Hash = transaction.tx_hash,
+                                From = transaction.from_address,
+                                To = transaction.to_address,
+                                Value = transaction.value
+                            });
+                        }
                     }
                 }
             }
 
-            var l = result.Distinct().ToList();
-
-            //result = result.Distinct().ToList();
-
-            Lambda.Log($"Return {l.Count} logs");
-            return l;
+            return result;
         }
 
         public List<Model.TransactionItem.Item> GetTransactionByHash(string hash, int chainId)

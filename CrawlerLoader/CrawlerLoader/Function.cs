@@ -85,13 +85,13 @@ namespace CrawlerLoader
         public Int32 GetBlocksCount(Int32 from, Int32 lastBlock)
         {
             Lambda.Log($"Get blocks count from: {from} to: {lastBlock}");
-            var blocksLimit = 500;
+            var blocksLimit = 1000;
             var step = 10;
 
-            if (from + step > lastBlock)
+            if (from + step >= lastBlock)
             {
-                Lambda.Log($"Blocks count: {lastBlock - from}");
-                return lastBlock - from;
+                Lambda.Log($"Blocks count: {lastBlock} - {from} = {lastBlock - from}. Return 0.");
+                return 0;
             }
 
             for (int i = 0; i < blocksLimit; i += step)

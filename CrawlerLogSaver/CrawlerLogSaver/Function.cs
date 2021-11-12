@@ -31,7 +31,10 @@ namespace CrawlerLogSaver
 
                 transaction = CreateTransactionObject(saveLog);
                 transactionId = Convert.ToInt32(await WriteToDb("transaction", transaction));
-            } else
+
+                Lambda.Log($"Save transaction with ID: {transactionId}");
+            }
+            else
             {
                 Lambda.Log($"Transaction {saveLog.Hash} is contained in DB");
                 transactionId = JsonSerializer.Deserialize<Transaction>(result).Id;
@@ -48,7 +51,10 @@ namespace CrawlerLogSaver
             {
                 Lambda.Log($"Log from transactionId {log.TransactionId} is not contained in DB");
                 logId = Convert.ToInt32(await WriteToDb("log", log));
-            } else
+
+                Lambda.Log($"Save Log with ID: {logId}");
+            }
+            else
             {
                 Lambda.Log($"Log from transactionId {log.TransactionId} is contained in DB");
                 logId = JsonSerializer.Deserialize<Log>(result).Id;
@@ -67,34 +73,45 @@ namespace CrawlerLogSaver
                 logDataId = Convert.ToInt32(await WriteToDb("logData", logData));
 
                 Lambda.Log($"Save LogData with ID: {logDataId}");
-            } else
+            }
+            else
             {
                 Lambda.Log($"LogData from logId {logData.LogId} is contained in DB");
                 logDataId = JsonSerializer.Deserialize<LogData>(result).Id;
             }
+
+            var contract = saveLog.Contract;
 
             if (logDataId != 0)
             {
                 if (saveLog.Type == 0)
                 {
                     // RPC
-                    Lambda.Log($"Last block RPC: {saveLog.Contract.LastBlockRPC}");
+                    Lambda.Log($"Last block RPC: {contract.LastBlockRPC}");
+                    Lambda.Log($"Log block number: {log.BlockNumber}");
 
-                    var contract = saveLog.Contract;
+                    if (contract.LastBlockRPC <= Convert.ToInt32(log.BlockNumber))
+                    {
+                        contract.LastBlockRPC = Convert.ToInt32(log.BlockNumber) + 1;
 
-                    contract.LastBlockRPC = Convert.ToInt32(log.BlockNumber);
-                    saveLog.Contract.LastBlockRPC = Convert.ToInt32(saveLog.BlockNumber);
-                    Lambda.Log($"Update last block RPC to {saveLog.Contract.LastBlockRPC}");
+                        Lambda.Log($"Update last block RPC to {contract.LastBlockRPC}");
+                        await UpdateInDb("contract", contract);
+                    }
                 }
                 else
                 {
                     // Covelent
-                    Lambda.Log($"Last block Covalent {saveLog.Contract.LastBlockWS}");
-                    saveLog.Contract.LastBlockWS = Convert.ToInt32(log.BlockNumber);
-                    Lambda.Log($"Update last block Covalent to {saveLog.Contract.LastBlockWS}");
-                }
+                    Lambda.Log($"Last block Covalent {contract.LastBlockWS}");
+                    Lambda.Log($"Log block number: {log.BlockNumber}");
 
-                await UpdateInDb("contract", saveLog.Contract);
+                    if (contract.LastBlockWS <= Convert.ToInt32(log.BlockNumber))
+                    {
+                        contract.LastBlockWS = Convert.ToInt32(log.BlockNumber) + 1;
+
+                        Lambda.Log($"Update last block Covalent to {contract.LastBlockWS}");
+                        await UpdateInDb("contract", contract);
+                    }
+                }
             }
 
             return $"Save log";
@@ -115,9 +132,9 @@ namespace CrawlerLogSaver
 
         public async Task<string> WriteToDb<T>(string name, T sendData)
         {
-            var data = new DbObject() 
-            { 
-                Name = name, 
+            var data = new DbObject()
+            {
+                Name = name,
                 Data = JsonSerializer.Serialize(sendData)
             };
 

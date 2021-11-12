@@ -12,7 +12,7 @@
     "framework"     : "netcoreapp3.1",
     "function-runtime" : "dotnetcore3.1",
     "function-memory-size" : 512,
-    "function-timeout"     : 120,
+    "function-timeout"     : 240,
     "function-handler"     : "CrawlerDownloaderCovalent::CrawlerDownloaderCovalent.Function::FunctionHandler",
     "function-name"        : "CrawlerDownloaderCovalent",
     "function-description" : "",

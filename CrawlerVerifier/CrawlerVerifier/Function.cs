@@ -14,30 +14,32 @@ namespace CrawlerVerifier
     {
         public async Task<string> FunctionHandler(VerifiObject data, ILambdaContext context)
         {
+            var contract = data.Contract;
+
             Lambda._context = context;
-            Lambda.Log($"Get data from loader by contract: ID {data.Contract.Id}, address {data.Contract.Address}");
+            Lambda.Log($"Get data from loader by contract: ID {contract.Id}, address {contract.Address}");
 
             DateTime start = DateTime.UtcNow;
 
-            if (data.Contract.LastBlockRPC < data.Contract.CreationBlock)
+            if (contract.LastBlockRPC < contract.CreationBlock)
             {
-                data.Contract.LastBlockRPC = data.Contract.CreationBlock;
+                contract.LastBlockRPC = contract.CreationBlock;
             }
 
-            if (data.Contract.LastBlockWS < data.Contract.CreationBlock)
+            if (contract.LastBlockWS < contract.CreationBlock)
             {
-                data.Contract.LastBlockWS = data.Contract.CreationBlock;
+                contract.LastBlockWS = contract.CreationBlock;
             }
 
 
             Lambda.Log("Run rpc downloader");
             var rpcData = await RunDownloader("RPC", new DownloaderObject()
             {
-                From = data.Contract.LastBlockRPC,
-                To = data.Contract.LastBlockRPC + data.RPCCount,
+                From = contract.LastBlockRPC,
+                To = contract.LastBlockRPC + data.RPCCount,
                 Connections = data.Connections,
-                ContractAddress = data.Contract.Address,
-                ChainId = data.Contract.ChainId
+                ContractAddress = contract.Address,
+                ChainId = contract.ChainId
             });
 
             if (rpcData != null)
@@ -47,32 +49,41 @@ namespace CrawlerVerifier
                 {
                     // update block
 
-                    var from = data.Contract.LastBlockWS;
-                    data.Contract.LastBlockRPC += data.RPCCount;
+                    var from = contract.LastBlockRPC;
+                    contract.LastBlockRPC += data.RPCCount;
 
-                    var contractId = await UpdateInDb("contract", data.Contract);
+                    var contractId = await UpdateInDb("contract", contract);
 
-                    Lambda.Log($"Update contract {contractId} last block RPC from: {from} to: {data.Contract.LastBlockRPC}");
+                    Lambda.Log($"Update contract {contractId} last block RPC from: {from} to: {contract.LastBlockRPC}");
                 }
             }
             else
             {
                 rpcData = new List<Log>();
-                Lambda.Log($"rpc downloader return null, contract: ID {data.Contract.Id}, address {data.Contract.Address}");
+                Lambda.Log($"rpc downloader return null, contract: ID {contract.Id}, address {contract.Address}");
             }
 
-            Lambda.Log($"Run save rpc logs, {rpcData.Count} count");
-            SaveLogs(rpcData, data.Contract, 0, start);
+            if (rpcData.Count != 0)
+            {
+                Lambda.Log($"Run save rpc logs, {rpcData.Count} count");
+                Lambda.Log($"Last block RPC: {contract.LastBlockRPC}");
 
+                for (int i = 0; i < rpcData.Count; i++)
+                {
+                    Lambda.Log($"log block num:  {rpcData[i].BlockNumber}");
+                }
+
+                await SaveLogs(rpcData, contract, 0, start);
+            }
 
             Lambda.Log("Run covalent downloader");
             var covalentData = await RunDownloader("Covalent", new DownloaderObject()
             {
-                From = data.Contract.LastBlockWS,
-                To = data.Contract.LastBlockWS + data.CovalentCount,
+                From = contract.LastBlockWS,
+                To = contract.LastBlockWS + data.CovalentCount,
                 Connections = data.Connections,
-                ContractAddress = data.Contract.Address,
-                ChainId = data.Contract.ChainId
+                ContractAddress = contract.Address,
+                ChainId = contract.ChainId
             });
 
             if (covalentData != null)
@@ -82,29 +93,43 @@ namespace CrawlerVerifier
                 {
                     // update block
 
-                    var from = data.Contract.LastBlockWS;
-                    data.Contract.LastBlockWS += data.CovalentCount;
+                    var from = contract.LastBlockWS;
+                    contract.LastBlockWS += data.CovalentCount;
 
-                    var contractId = await UpdateInDb("contract", data.Contract);
+                    var contractId = await UpdateInDb("contract", contract);
 
-                    Lambda.Log($"Update contract {contractId} last block Covalent from: {from} to: {data.Contract.LastBlockWS}");
+                    Lambda.Log($"Update contract {contractId} last block Covalent from: {from} to: {contract.LastBlockWS}");
                 }
             }
             else
             {
                 covalentData = new List<Log>();
-                Lambda.Log($"covalent downloader return null, contract: ID {data.Contract.Id}, address {data.Contract.Address}");
+                Lambda.Log($"covalent downloader return null, contract: ID {contract.Id}, address {contract.Address}");
             }
 
+            if (covalentData.Count != 0)
+            {
+                Lambda.Log($"Run save covalent logs, {covalentData.Count} count");
+                Lambda.Log($"Last block Covalent: {contract.LastBlockWS}");
 
-            Lambda.Log($"Run save covalent logs, {covalentData.Count} count");
-            SaveLogs(covalentData, data.Contract, 1, start);
+                for (int i = 0; i < covalentData.Count; i++)
+                {
+                    Lambda.Log($"log block num:  {covalentData[i].BlockNumber}");
+                }
+
+                await SaveLogs(covalentData, contract, 1, start);
+            }
 
             return $"Work time: {DateTime.UtcNow - start}";
         }
 
-        public string SaveLogs(List<Log> logs, Contract contract, int type, DateTime start)
+        public async Task<string> SaveLogs(List<Log> logs, Contract cont, int type, DateTime start)
         {
+            var contract = await GetContract(cont);
+
+            if (contract == null) 
+                return null;
+
             List<Log> saveList = new List<Log>();
 
             foreach (var log in logs)
@@ -135,7 +160,7 @@ namespace CrawlerVerifier
                 if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
                     return $"Work time: {DateTime.UtcNow - start}";
 
-                RunLogSaver(item).ConfigureAwait(false).GetAwaiter();
+                await RunLogSaver(item);
             }
 
             return "All good";
@@ -157,9 +182,25 @@ namespace CrawlerVerifier
             return await Lambda.Run("LambdaDbUpdater", JsonSerializer.Serialize(data));
         }
 
+        public async Task<Contract> GetContract(Contract contract)
+        {
+            var data = new DbObject()
+            {
+                Name = "contract",
+                Data = JsonSerializer.Serialize(contract)
+            };
+
+            var result = await Lambda.Run("DBReader", JsonSerializer.Serialize(data));
+
+            if (result == null)
+                return null;
+
+            return JsonSerializer.Deserialize<Contract>(result);
+        }
+
         public async Task<List<Log>> RunDownloader(string name, DownloaderObject downloader)
         {
-               var result = await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader));
+            var result = await Lambda.Run("CrawlerDownloader" + name, JsonSerializer.Serialize(downloader));
 
             if (result == null)
                 return null;
