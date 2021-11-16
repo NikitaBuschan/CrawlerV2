@@ -38,8 +38,7 @@ namespace CrawlerVerifier
                 From = contract.LastBlockRPC,
                 To = contract.LastBlockRPC + data.RPCCount,
                 Connections = data.Connections,
-                ContractAddress = contract.Address,
-                ChainId = contract.ChainId
+                Contract = contract
             });
 
             if (rpcData != null)
@@ -76,14 +75,20 @@ namespace CrawlerVerifier
                 await SaveLogs(rpcData, contract, 0, start);
             }
 
+
+            contract = await GetContract(data.Contract);
+
+            if (contract == null)
+                return null;
+
+
             Lambda.Log("Run covalent downloader");
             var covalentData = await RunDownloader("Covalent", new DownloaderObject()
             {
                 From = contract.LastBlockWS,
                 To = contract.LastBlockWS + data.CovalentCount,
                 Connections = data.Connections,
-                ContractAddress = contract.Address,
-                ChainId = contract.ChainId
+                Contract = contract
             });
 
             if (covalentData != null)
@@ -125,11 +130,6 @@ namespace CrawlerVerifier
 
         public async Task<string> SaveLogs(List<Log> logs, Contract cont, int type, DateTime start)
         {
-            var contract = await GetContract(cont);
-
-            if (contract == null) 
-                return null;
-
             List<Log> saveList = new List<Log>();
 
             foreach (var log in logs)
@@ -139,7 +139,7 @@ namespace CrawlerVerifier
                     saveList.Add(new Log()
                     {
                         Type = type,
-                        Contract = contract,
+                        Contract = null,
                         LogIndex = log.LogIndex,
                         Data = log.Data,
                         Topics = log.Topics,
@@ -159,6 +159,13 @@ namespace CrawlerVerifier
             {
                 if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
                     return $"Work time: {DateTime.UtcNow - start}";
+
+                var contract = await GetContract(cont);
+
+                if (contract == null)
+                    return null;
+
+                item.Contract = cont;
 
                 await RunLogSaver(item);
             }

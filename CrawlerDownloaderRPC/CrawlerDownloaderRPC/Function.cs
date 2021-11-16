@@ -27,7 +27,7 @@ namespace CrawlerDownloaderRPC
         public async Task<List<Log>> FunctionHandler(DownloaderObject data, ILambdaContext context)
         {
             Lambda._context = context;
-            Lambda.Log($"Get data by contract {data.ContractAddress}");
+            Lambda.Log($"Get data by contract ID {data.Contract.Id} Address {data.Contract.Address}");
 
             List<FilterLog> logs = new List<FilterLog>();
 
@@ -35,7 +35,7 @@ namespace CrawlerDownloaderRPC
             {
                 var web3 = new Web3(connection);
 
-                var list = await GetLogs(web3, data.From, data.To, data.ContractAddress);
+                var list = await GetLogs(web3, data.From, data.To, data.Contract.Address);
 
                 if (list != null)
                 {
@@ -46,9 +46,9 @@ namespace CrawlerDownloaderRPC
                     }
                     else
                     {
-                        if (list.Count > 50)
+                        if (list.Count > 10)
                         {
-                            logs.AddRange(list.GetRange(0, 50));
+                            logs.AddRange(list.GetRange(0, 10));
                         } else
                         {
                             logs.AddRange(list);
@@ -59,13 +59,11 @@ namespace CrawlerDownloaderRPC
                 }
             }
 
-            if (data.ContractAddress == "0x5AAFD67BFe65CF0a0055549991D02557f49bDD6A")
-            {
-                Lambda.Log($"--------!!!!Get logs: {logs.Count}");
-            }
+            Lambda.Log($"Create clear list with {logs.Count} logs");
 
             List<Log> result = new List<Log>();
 
+            var i = 1;
             foreach (var log in logs)
             {
                 Transaction receipt = null;
@@ -76,14 +74,19 @@ namespace CrawlerDownloaderRPC
 
                     try
                     {
-                        await Task.Delay(TimeSpan.FromMilliseconds(100));
-
+                        Lambda.Log($"Get receipt by log #{i} with connection {connection}");
                         receipt = GetReceipt(web3, log.TransactionHash);
+
                         if (receipt != null)
                         {
                             Lambda.Log($"Get receipt {receipt.TransactionHash}");
                             break;
                         }
+
+                        Lambda.Log($"Get receipt return null with connection {connection}");
+                        Lambda.Log($"Transaction hash: {log.TransactionHash}");
+
+                        await Task.Delay(TimeSpan.FromSeconds(1));
                     }
                     catch (Exception ex)
                     {
@@ -114,11 +117,10 @@ namespace CrawlerDownloaderRPC
                     To = receipt.To,
                     Value = receipt.Value.Value.ToString()
                 });
-            }
 
-            if (data.ContractAddress == "0x5AAFD67BFe65CF0a0055549991D02557f49bDD6A")
-            {
-                Lambda.Log($"--------!!!!Result logs: {result.Count}");
+                i++;
+
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
 
             if (result.Count == 0 && logs.Count != 0)

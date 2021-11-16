@@ -28,7 +28,8 @@ namespace CrawlerLoader
             var etherscanConnections = new List<string>()
             {
                 "https://mainnet.infura.io/v3/9594144e3adc45a195b4bf18a6d599da",
-                "https://eth.getblock.io/mainnet/?api_key=ad36687c-3d48-448b-bd14-4c30d0fb9298"
+                "https://eth.getblock.io/mainnet/?api_key=ad36687c-3d48-448b-bd14-4c30d0fb9298",
+                "https://eth.getblock.io/mainnet/?api_key=b2eac0c6-248f-4ea1-bca6-53400b80a0e7"
             };
 
             var binanceLastBlock = Convert.ToInt32(await GetLastBlock("binance last block"));
@@ -39,7 +40,9 @@ namespace CrawlerLoader
                 "https://bsc.getblock.io/mainnet/?api_key=955d2dfc-2270-4b80-ac95-94f28266fca7",
                 "https://bsc.getblock.io/mainnet/?api_key=4a25e394-cd4b-4464-aa3d-a7a461b28a19",
                 "https://bsc.getblock.io/mainnet/?api_key=b2eac0c6-248f-4ea1-bca6-53400b80a0e7",
-                "https://bsc.getblock.io/mainnet/?api_key=e210ac89-08e5-4eea-8439-a71da611a1ab"
+                "https://bsc.getblock.io/mainnet/?api_key=e210ac89-08e5-4eea-8439-a71da611a1ab",
+                "https://bsc.getblock.io/mainnet/?api_key=926c5fd7-ea2b-4eb9-a163-995cb73c2417",
+                "https://bsc.getblock.io/mainnet/?api_key=ead64319-8fe9-4ea9-a2ce-3da91b8f76b6"
             };
 
 
@@ -62,35 +65,43 @@ namespace CrawlerLoader
 
             foreach (var contract in contracts)
             {
+                Lambda.Log($"Work with contract: ID {contract.Id}\nAddress {contract.Address}\nLast block RPC: {contract.LastBlockRPC}\nLast block Covalent {contract.LastBlockWS}");
                 if (contract.LastBlockRPC + blocks < lastBlock || contract.LastBlockWS + blocks < lastBlock)
                 {
+                    Lambda.Log($"Get rpc count for ID {contract.Id}\nAddress {contract.Address}\nRPC LB: {contract.LastBlockRPC}\nLB: {lastBlock}");
+                    var rpcCount = GetBlocksCount(contract.LastBlockRPC, lastBlock);
+
+                    Lambda.Log($"Get rpc count for ID {contract.Id}\nAddress {contract.Address}\nCovalent LB: {contract.LastBlockWS}\nLB: {lastBlock}");
+                    var covalentCount = GetBlocksCount(contract.LastBlockWS, lastBlock);
+
                     var verifier = new VerifiObject()
                     {
                         LastBlock = lastBlock,
-                        RPCCount = GetBlocksCount(contract.LastBlockRPC, lastBlock),
-                        CovalentCount = GetBlocksCount(contract.LastBlockWS, lastBlock),
+                        RPCCount = rpcCount,
+                        CovalentCount = covalentCount,
                         Connections = connections,
                         Contract = contract
                     };
 
-                    var test = System.Text.Json.JsonSerializer.Serialize(verifier);
+                    var verifierString = System.Text.Json.JsonSerializer.Serialize(verifier);
 
                     Lambda.Log($"Run verifier for contract: id {contract.Id}, address {contract.Address}");
-                    Lambda.Run("CrawlerVerifier", System.Text.Json.JsonSerializer.Serialize(verifier)).ConfigureAwait(false).GetAwaiter();
-                    await Task.Delay(TimeSpan.FromSeconds(10));
+
+                    Lambda.Run("CrawlerVerifier", verifierString).ConfigureAwait(false).GetAwaiter();
+
+                    await Task.Delay(TimeSpan.FromSeconds(8));
                 }
             }
         }
 
         public Int32 GetBlocksCount(Int32 from, Int32 lastBlock)
         {
-            Lambda.Log($"Get blocks count from: {from} to: {lastBlock}");
             var blocksLimit = 1000;
             var step = 10;
 
             if (from + step >= lastBlock)
             {
-                Lambda.Log($"Blocks count: {lastBlock} - {from} = {lastBlock - from}. Return 0.");
+                Lambda.Log($"Blocks count: < 10. Return 0.");
                 return 0;
             }
 
@@ -129,7 +140,7 @@ namespace CrawlerLoader
                 Data = data
             };
 
-            Lambda.Log($"Get last block from DB");
+            Lambda.Log($"Get {data} from DB");
             var result = await Lambda.Run("DBReader", System.Text.Json.JsonSerializer.Serialize(dbObject));
 
             return System.Text.Json.JsonSerializer.Deserialize<DictionaryObject>(result).Value;

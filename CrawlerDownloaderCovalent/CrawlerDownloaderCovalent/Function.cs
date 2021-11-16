@@ -16,48 +16,52 @@ namespace CrawlerDownloaderCovalent
         public async Task<List<Log>> FunctionHandler(DownloaderObject data, ILambdaContext context)
         {
             Lambda._context = context;
-            Lambda.Log($"Get data from verifier: {data}");
+            Lambda.Log($"Get data from verifier contract: ID {data.Contract.Id} Address {data.Contract.Address}");
 
             var logs = GetLogs(
-                data.ChainId,
-                data.ContractAddress,
+                data.Contract.ChainId,
+                data.Contract.Address,
                 data.From,
                 data.To,
                 data.To - data.From);
 
+            
             if (logs == null)
             {
                 Lambda.Log($"Get logs return null");
                 return null;
             }
 
-            var list = await CreateLogList(logs, data.ChainId);
+            Lambda.Log($"Get {logs.Count} logs");
 
-            List<Log> result = new List<Log>();
+            var logsCount = 30;
+            List<Item> list = new List<Item>();
 
-            var logsCount = 50;
-
-            if (list.Count > logsCount)
+            if (logs.Count > logsCount)
             {
-                result.AddRange(list.GetRange(0, logsCount));
+                list.AddRange(logs.GetRange(0, logsCount));
             }
             else
             {
-                result.AddRange(list);
+                list.AddRange(logs);
             }
 
+            var result = await CreateLogList(list, data.Contract.ChainId);
 
             Lambda.Log($"Return {result.Count} logs");
+
             return result;
         }
 
         public async Task<List<Log>> CreateLogList(List<Item> list, int chainId)
         {
+            Lambda.Log($"Creating log list with {list.Count} logs");
+
             List<Log> result = new List<Log>();
 
             foreach (var log in list)
             {
-                await Task.Delay(TimeSpan.FromSeconds(3));
+                await Task.Delay(TimeSpan.FromSeconds(1.5));
                 var transactionLogs = GetTransactionByHash(log.tx_hash, chainId);
 
                 if (transactionLogs == null)

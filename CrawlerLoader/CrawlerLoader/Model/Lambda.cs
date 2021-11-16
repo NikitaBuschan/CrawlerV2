@@ -19,6 +19,7 @@ namespace CrawlerLoader.Model
 
         public static async Task<string> Run(string name, string data)
         {
+            Lambda.Log($"Run lambda {name}");
             var request = CreateRequest(name, data);
 
             var client = Lambda.GetAmazonClient();
