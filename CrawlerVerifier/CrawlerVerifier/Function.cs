@@ -12,129 +12,111 @@ namespace CrawlerVerifier
 {
     public class Function
     {
+        public Contract Contract = null;
+        public DateTime Start;
         public async Task<string> FunctionHandler(VerifiObject data, ILambdaContext context)
         {
-            var contract = data.Contract;
-
+            Contract = data.Contract;
             Lambda._context = context;
-            Lambda.Log($"Get data from loader by contract: ID {contract.Id}, address {contract.Address}");
+            Lambda.Log($"Get data from loader by contract: ID {Contract.Id}, address {Contract.Address}");
 
-            DateTime start = DateTime.UtcNow;
+            Start = DateTime.UtcNow;
 
-            if (contract.LastBlockRPC < contract.CreationBlock)
+            // Work with RPC
+            if (Contract.LastBlockRPC < Contract.CreationBlock)
             {
-                contract.LastBlockRPC = contract.CreationBlock;
+                Contract.LastBlockRPC = Contract.CreationBlock;
             }
 
-            if (contract.LastBlockWS < contract.CreationBlock)
-            {
-                contract.LastBlockWS = contract.CreationBlock;
-            }
-
-
-            Lambda.Log("Run rpc downloader");
-            var rpcData = await RunDownloader("RPC", new DownloaderObject()
-            {
-                From = contract.LastBlockRPC,
-                To = contract.LastBlockRPC + data.RPCCount,
-                Connections = data.Connections,
-                Contract = contract
-            });
-
-            if (rpcData != null)
-            {
-                Lambda.Log($"RPC logs count: {rpcData.Count}");
-                if (rpcData.Count == 0)
+            await Download(
+                "RPC",
+                new DownloaderObject()
                 {
-                    // update block
+                    From = Contract.LastBlockRPC,
+                    To = Contract.LastBlockRPC + data.RPCCount,
+                    Connections = data.Connections,
+                    Contract = Contract
+                },
+                data.RPCCount);
 
-                    var from = contract.LastBlockRPC;
-                    contract.LastBlockRPC += data.RPCCount;
+            // update contract
+            Contract = await GetContract(Contract);
 
-                    var contractId = await UpdateInDb("contract", contract);
-
-                    Lambda.Log($"Update contract {contractId} last block RPC from: {from} to: {contract.LastBlockRPC}");
-                }
-            }
-            else
+            // Work with Covalent
+            if (Contract.LastBlockWS < Contract.CreationBlock)
             {
-                rpcData = new List<Log>();
-                Lambda.Log($"rpc downloader return null, contract: ID {contract.Id}, address {contract.Address}");
+                Contract.LastBlockWS = Contract.CreationBlock;
             }
 
-            if (rpcData.Count != 0)
-            {
-                Lambda.Log($"Run save rpc logs, {rpcData.Count} count");
-                Lambda.Log($"Last block RPC: {contract.LastBlockRPC}");
-
-                for (int i = 0; i < rpcData.Count; i++)
+            await Download(
+                "Covalent",
+                new DownloaderObject()
                 {
-                    Lambda.Log($"log block num:  {rpcData[i].BlockNumber}");
-                }
+                    From = Contract.LastBlockWS,
+                    To = Contract.LastBlockWS + data.CovalentCount,
+                    Connections = data.Connections,
+                    Contract = Contract
+                },
+                data.CovalentCount);
 
-                await SaveLogs(rpcData, contract, 0, start);
-            }
+            Lambda.Log($"Work time: {DateTime.UtcNow - Start}");
 
-
-            contract = await GetContract(data.Contract);
-
-            if (contract == null)
-                return null;
-
-
-            Lambda.Log("Run covalent downloader");
-            var covalentData = await RunDownloader("Covalent", new DownloaderObject()
-            {
-                From = contract.LastBlockWS,
-                To = contract.LastBlockWS + data.CovalentCount,
-                Connections = data.Connections,
-                Contract = contract
-            });
-
-            if (covalentData != null)
-            {
-                Lambda.Log($"Covalent logs count: {covalentData.Count}");
-                if (covalentData.Count == 0)
-                {
-                    // update block
-
-                    var from = contract.LastBlockWS;
-                    contract.LastBlockWS += data.CovalentCount;
-
-                    var contractId = await UpdateInDb("contract", contract);
-
-                    Lambda.Log($"Update contract {contractId} last block Covalent from: {from} to: {contract.LastBlockWS}");
-                }
-            }
-            else
-            {
-                covalentData = new List<Log>();
-                Lambda.Log($"covalent downloader return null, contract: ID {contract.Id}, address {contract.Address}");
-            }
-
-            if (covalentData.Count != 0)
-            {
-                Lambda.Log($"Run save covalent logs, {covalentData.Count} count");
-                Lambda.Log($"Last block Covalent: {contract.LastBlockWS}");
-
-                for (int i = 0; i < covalentData.Count; i++)
-                {
-                    Lambda.Log($"log block num:  {covalentData[i].BlockNumber}");
-                }
-
-                await SaveLogs(covalentData, contract, 1, start);
-            }
-
-            return $"Work time: {DateTime.UtcNow - start}";
+            return $"Work time: {DateTime.UtcNow - Start}";
         }
 
-        public async Task<string> SaveLogs(List<Log> logs, Contract cont, int type, DateTime start)
+        public async Task Download(string name, DownloaderObject downloaderObject, int count)
+        {
+            Lambda.Log($"Run {name} downloader");
+
+            var data = await RunDownloader(name, downloaderObject);
+
+            if (data == null)
+                return;
+
+            Lambda.Log($"{name} logs count: {data.Count}");
+
+            if (data.Count == 0)
+            {
+                Int32 from = 0;
+                Int32 to = 0;
+
+                if (name == "RPC")
+                {
+                    from = Contract.LastBlockRPC;
+                    Contract.LastBlockRPC += count;
+                    to = Contract.LastBlockRPC;
+                }
+                else
+                {
+                    from = Contract.LastBlockWS;
+                    Contract.LastBlockWS += count;
+                    to = Contract.LastBlockWS;
+                }
+
+                var contractId = await UpdateInDb("contract", Contract);
+
+                Lambda.Log($"Update contract ID {contractId} Address {Contract.Address} last block {name} from {from} -> {to}");
+            }
+            else
+            {
+                for (int i = 0; i < data.Count; i++)
+                    Lambda.Log($"log block num:  {data[i].BlockNumber}");
+                Lambda.Log($"Run SaveLogs for {name} with {data.Count} logs");
+
+                await SaveLogs(
+                    data, 
+                    Contract, 
+                    name == "RPC" ? 0 : 1);
+            }
+        }
+
+        public async Task<string> SaveLogs(List<Log> logs, Contract cont, int type)
         {
             List<Log> saveList = new List<Log>();
 
             foreach (var log in logs)
             {
-                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && x.LogIndex == log.LogIndex) == null)
+                if (saveList.FirstOrDefault(x => x.Hash == log.Hash && Convert.ToInt32(x.LogIndex) == Convert.ToInt32(log.LogIndex)) == null)
                 {
                     saveList.Add(new Log()
                     {
@@ -157,15 +139,15 @@ namespace CrawlerVerifier
 
             foreach (var item in saveList)
             {
-                if (DateTime.UtcNow - start > TimeSpan.FromMinutes(4.5))
-                    return $"Work time: {DateTime.UtcNow - start}";
+                if (DateTime.UtcNow - Start > TimeSpan.FromMinutes(4.5))
+                    return $"Work time: {DateTime.UtcNow - Start}";
 
                 var contract = await GetContract(cont);
 
                 if (contract == null)
                     return null;
 
-                item.Contract = cont;
+                item.Contract = contract;
 
                 await RunLogSaver(item);
             }

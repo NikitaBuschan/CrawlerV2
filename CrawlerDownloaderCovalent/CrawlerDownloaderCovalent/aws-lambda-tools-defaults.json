@@ -20,6 +20,6 @@
     "function-role"        : "arn:aws:iam::133490798775:role/service-role/CrawlerDownloaderCovalent-role-hqd9isbq",
     "function-architecture" : "x86_64",
     "tracing-mode"          : "PassThrough",
-    "environment-variables" : "",
+    "environment-variables" : "\"WorkTimeInMinutes\"=\"3\"",
     "image-tag"             : ""
 }
